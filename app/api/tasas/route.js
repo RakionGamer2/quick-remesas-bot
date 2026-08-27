@@ -1,5 +1,5 @@
 // api/tasas.js
-import { getRates } from '../lib/rates.js'; // Ajusta la ruta a donde esté tu archivo
+import { getRates } from "../../../lib/fetchRates";
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
