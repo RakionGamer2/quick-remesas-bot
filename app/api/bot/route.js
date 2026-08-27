@@ -81,6 +81,7 @@ export async function POST(req) {
     }
 
     // Manejo de consulta de tasas en texto
+    // Manejo de consulta de tasas en texto (Solo Países hacia Efectivo)
     if (text === "consultar tasas📊" || text === "consultar tasas" || text === "tasas" || text === "tasa") {
       const rawRates = await getRates();
 
@@ -93,14 +94,25 @@ export async function POST(req) {
         return new Response("ok", { status: 200 });
       }
 
-      let message = "📊 *TASAS ACTUALES*\n\n";
+      let message = "💵 *TASAS A EFECTIVO*\n\n";
+      let count = 0;
 
       for (const [origin, destinations] of Object.entries(rawRates)) {
         if (typeof destinations === 'object' && destinations !== null) {
-          for (const [dest, rate] of Object.entries(destinations)) {
-            message += `*${origin}-${dest}*: ${rate}\n`;
+          // Busca la clave de destino ignorando mayúsculas/minúsculas
+          const efectivoKey = Object.keys(destinations).find(
+            (k) => k.toLowerCase() === "efectivo"
+          );
+
+          if (efectivoKey && destinations[efectivoKey]) {
+            message += `• *${origin}-Efectivo:* ${destinations[efectivoKey]}\n`;
+            count++;
           }
         }
+      }
+
+      if (count === 0) {
+        message = "No se encontraron tasas a Efectivo disponibles.";
       }
 
       await bot.sendMessage(chatId, message, {
