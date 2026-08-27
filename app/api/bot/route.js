@@ -24,13 +24,11 @@ const IMAGE_PROCESSORS = [
   { key: 'efectivo', processor: createImageWithRatesEfectivo },
 ];
 
-// Se añade el nuevo botón al teclado principal
 const PERSISTENT_KEYBOARD = {
   reply_markup: {
     keyboard: [
       [
-        { text: "Generar Tasas💸" },
-        { text: "Consultar Tasas📊" }
+        { text: "Generar Tasas💸" }
       ]
     ],
     resize_keyboard: true,
@@ -70,56 +68,12 @@ export async function POST(req) {
 📋 ¿Cómo usarme?
 
 1️⃣ Presiona "Generar Tasas💸" para procesar las imágenes
-2️⃣ Presiona "Consultar Tasas📊" (o escribe "tasas") para ver los valores en texto
-3️⃣ Usa el botón "🔄 Actualizar Tasas" cuando necesites tasas nuevas
+2️⃣ Usa el botón "🔄 Actualizar Tasas" cuando necesites tasas nuevas
 
 ¡Comencemos! 👇`;
 
     if (text === "/start" || text === "start") {
       await bot.sendMessage(chatId, WELCOME_MESSAGE, PERSISTENT_KEYBOARD);
-      return new Response("ok", { status: 200 });
-    }
-
-    // Manejo de consulta de tasas en texto
-    // Manejo de consulta de tasas en texto (Solo Países hacia Efectivo)
-    if (text === "consultar tasas📊" || text === "consultar tasas" || text === "tasas" || text === "tasa") {
-      const rawRates = await getRates();
-
-      if (!rawRates || Object.keys(rawRates).length === 0) {
-        await bot.sendMessage(
-          chatId,
-          "No encontré tasas disponibles en este momento.",
-          PERSISTENT_KEYBOARD
-        );
-        return new Response("ok", { status: 200 });
-      }
-
-      let message = "💵 *TASAS A EFECTIVO*\n\n";
-      let count = 0;
-
-      for (const [origin, destinations] of Object.entries(rawRates)) {
-        if (typeof destinations === 'object' && destinations !== null) {
-          // Busca la clave de destino ignorando mayúsculas/minúsculas
-          const efectivoKey = Object.keys(destinations).find(
-            (k) => k.toLowerCase() === "efectivo"
-          );
-
-          if (efectivoKey && destinations[efectivoKey]) {
-            message += `• *${origin}-Efectivo:* ${destinations[efectivoKey]}\n`;
-            count++;
-          }
-        }
-      }
-
-      if (count === 0) {
-        message = "No se encontraron tasas a Efectivo disponibles.";
-      }
-
-      await bot.sendMessage(chatId, message, {
-        parse_mode: "Markdown",
-        ...PERSISTENT_KEYBOARD,
-      });
-
       return new Response("ok", { status: 200 });
     }
 
