@@ -24,9 +24,15 @@ const IMAGE_PROCESSORS = [
   { key: 'efectivo', processor: createImageWithRatesEfectivo },
 ];
 
+// Se añade el nuevo botón al teclado principal
 const PERSISTENT_KEYBOARD = {
   reply_markup: {
-    keyboard: [[{ text: "Generar Tasas💸" }]],
+    keyboard: [
+      [
+        { text: "Generar Tasas💸" },
+        { text: "Consultar Tasas📊" }
+      ]
+    ],
     resize_keyboard: true,
     one_time_keyboard: false,
   },
@@ -51,7 +57,8 @@ export async function POST(req) {
 
     const chatId =
       update.message?.chat?.id || update.callback_query?.message?.chat?.id;
-    const text = (update.message?.text || "").trim();
+    const rawText = (update.message?.text || "").trim();
+    const text = rawText.toLowerCase();
     const callbackData = update.callback_query?.data;
 
     if (update.callback_query) {
@@ -62,12 +69,9 @@ export async function POST(req) {
 
 📋 ¿Cómo usarme?
 
-1️⃣ Presiona el botón "Generar Tasas" en tu teclado
-2️⃣ Espera mientras proceso las imágenes (máximo 1 minuto)
-3️⃣ Recibirás las imágenes con las tasas actualizadas
-4️⃣ Usa el botón "🔄 Actualizar Tasas" cuando necesites tasas nuevas, también puedes darle al botón de "Generar Tasas"
-
-💡 Tip: El botón está siempre disponible en tu teclado para que generes tasas cuando quieras.
+1️⃣ Presiona "Generar Tasas💸" para procesar las imágenes
+2️⃣ Presiona "Consultar Tasas📊" (o escribe "tasas") para ver los valores en texto
+3️⃣ Usa el botón "🔄 Actualizar Tasas" cuando necesites tasas nuevas
 
 ¡Comencemos! 👇`;
 
@@ -76,14 +80,46 @@ export async function POST(req) {
       return new Response("ok", { status: 200 });
     }
 
-    if (callbackData === "update_all" || text === "Generar Tasas💸") {
+    // Manejo de consulta de tasas en texto
+    if (text === "consultar tasas📊" || text === "consultar tasas" || text === "tasas" || text === "tasa") {
+      const rawRates = await getRates();
+
+      if (!rawRates || Object.keys(rawRates).length === 0) {
+        await bot.sendMessage(
+          chatId,
+          "No encontré tasas disponibles en este momento.",
+          PERSISTENT_KEYBOARD
+        );
+        return new Response("ok", { status: 200 });
+      }
+
+      let message = "📊 *TASAS ACTUALES*\n\n";
+
+      for (const [origin, destinations] of Object.entries(rawRates)) {
+        if (typeof destinations === 'object' && destinations !== null) {
+          for (const [dest, rate] of Object.entries(destinations)) {
+            message += `*${origin}-${dest}*: ${rate}\n`;
+          }
+        }
+      }
+
+      await bot.sendMessage(chatId, message, {
+        parse_mode: "Markdown",
+        ...PERSISTENT_KEYBOARD,
+      });
+
+      return new Response("ok", { status: 200 });
+    }
+
+    // Manejo de generación de imágenes
+    if (callbackData === "update_all" || text === "generar tasas💸") {
       const processingMsg = await bot.sendMessage(
         chatId,
         "⏳ Procesando imágenes... Esto puede durar máximo 1 minuto"
       );
 
       const rawRates = await getRates();
-      
+
       const rates = {
         ecuador: rawRates["Ecuador"] || rawRates["ECUADOR"],
         mexico: rawRates["Mexico"] || rawRates["México"] || rawRates["MEXICO"],
