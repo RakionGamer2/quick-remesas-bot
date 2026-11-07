@@ -10,6 +10,8 @@ import { createImageWithRatesEfectivo } from "../../../lib/processorEfectivo";
 import { createImageWithRatesEEUU } from "../../../lib/processorEEUU";
 import { createImageWithRatesEspana } from "../../../lib/processorEspana";
 import { createImageWithRatesPanama } from "../../../lib/processorPanama";
+import { createImageWithRatesMexico } from "../../../lib/processorMexico";
+import { createImageWithRatesRemesas } from "../../../lib/processorRemesas";
 
 const IMAGE_PROCESSORS = [
   { key: 'chile', processor: createImageWithRatesChile },
@@ -20,8 +22,10 @@ const IMAGE_PROCESSORS = [
   { key: 'eeuu', processor: createImageWithRatesEEUU },
   { key: 'espana', processor: createImageWithRatesEspana },
   { key: 'panama', processor: createImageWithRatesPanama },
+  { key: 'mexico', processor: createImageWithRatesMexico },
   { key: 'venezuela', processor: createImageWithRatesVenezuela },
   { key: 'efectivo', processor: createImageWithRatesEfectivo },
+  { key: 'remesas', processor: createImageWithRatesRemesas },
 ];
 
 const PERSISTENT_KEYBOARD = {
@@ -99,6 +103,7 @@ export async function POST(req) {
         espana: rawRates["España"] || rawRates["españa"],
         panama: rawRates["Panamá"] || rawRates["Panama"],
         efectivo: rawRates["Efectivo"] || rawRates["efectivo"],
+        remesas: rawRates["remesas"],
       };
 
       if (Object.values(rates).every(val => !val || Object.keys(val).length === 0)) {
