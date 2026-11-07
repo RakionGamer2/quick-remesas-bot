@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "check-rates": "node test-rates.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
